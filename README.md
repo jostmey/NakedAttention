@@ -1,3 +1,5 @@
+# WORK IN PROGRESS - STILL FIXING
+
 ##  Revealing example of a self-attention model, the building block of a transformer model
 
 Have you heard of transformer models and attempted to study their code but struggled to locate the essential components that make them tick? Look no further, you've arrived at the right place!
