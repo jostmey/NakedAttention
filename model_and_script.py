@@ -14,25 +14,6 @@ import torch
 import torchmetrics
 
 ##########################################################################################
-# Settings
-##########################################################################################
-
-# Settings for training
-#
-batch = 1024
-step = 0.1
-epochs = 128
-
-# Setings for model
-#
-width = 32
-
-# Settings for environment
-#
-device = torch.device('cpu')
-seed = 46525
-
-##########################################################################################
 # Model
 ##########################################################################################
 
@@ -95,27 +76,23 @@ class SelfAttentionModel(torch.nn.Module):
 # Instantiate model, performance metrics, and optimizer.
 ##########################################################################################
 
-model = SelfAttentionModel(28**2, 10, width=32).to(device)
-probability = torch.nn.Softmax(dim=1).to(device)
+model = SelfAttentionModel(28**2, 10, width=32)
+probability = torch.nn.Softmax(dim=1)
 
 loss = torch.nn.CrossEntropyLoss()
-accuracy = torchmetrics.classification.MulticlassAccuracy(num_classes=10).to(device)
+accuracy = torchmetrics.classification.MulticlassAccuracy(num_classes=10)
 
-optimizer = torch.optim.Adam(model.parameters(), lr=step)
-
-##########################################################################################
-# Load data
-##########################################################################################
-
-xs_train, ys_train, xs_val, ys_val, xs_test, ys_test = dp.load_mnist(seed=seed, device=device)
+optimizer = torch.optim.Adam(model.parameters(), lr=0.1)
 
 ##########################################################################################
-# Data sampling
+# Dataset and data sampler
 ##########################################################################################
+
+xs_train, ys_train, xs_val, ys_val, xs_test, ys_test = dp.load_mnist(seed=46525)
 
 dataset_train = torch.utils.data.TensorDataset(xs_train, ys_train)
 sampler_train = torch.utils.data.RandomSampler(dataset_train, replacement=True)
-loader_train = torch.utils.data.DataLoader(dataset=dataset_train, batch_size=batch, sampler=sampler_train, drop_last=True)
+loader_train = torch.utils.data.DataLoader(dataset=dataset_train, batch_size=1024, sampler=sampler_train, drop_last=True)
 
 ##########################################################################################
 # Model
@@ -128,14 +105,14 @@ state_better = {}
 
 # Loop over the dataset for many epochs
 #
-for i in range(epochs):
+for i in range(128):
 
   # Train the model
   #
   model.train()
   e_train = 0.0
   a_train = 0.0
-  for j, (xs_batch, ys_batch) in enumerate(loader_train):
+  for xs_batch, ys_batch in iter(loader_train): # Must use `iter` or `enumerate` for efficiency
     ls_batch = model(xs_batch)
     ps_batch = probability(ls_batch) # Model outputs logits that we must convert to probabilities
     e_batch = loss(ls_batch, ys_batch) # CrossEntropyLoss requires logits
