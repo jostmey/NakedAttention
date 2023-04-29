@@ -23,15 +23,15 @@ class SelfAttentionModel(torch.nn.Module):
 
     # Initialize components for self-attention
     #
-    self.K = torch.nn.Parameter(torch.randn(num_inputs, num_inputs))
-    self.Q = torch.nn.Parameter(torch.randn(num_inputs, num_inputs))
-    self.V = torch.nn.Parameter(torch.randn(num_inputs, num_inputs))
+    self.K = torch.nn.Parameter((2.0*torch.rand(num_inputs, num_inputs)-1.0)/num_inputs**0.5) # Randomly intialize each weight uniformly from [ -1/num_inputs**0.5, 1/num_inputs**0.5 ]
+    self.Q = torch.nn.Parameter((2.0*torch.rand(num_inputs, num_inputs)-1.0)/num_inputs**0.5)
+    self.V = torch.nn.Parameter((2.0*torch.rand(num_inputs, num_inputs)-1.0)/num_inputs**0.5)
 
     self.softmax = torch.nn.Softmax(dim=1)
 
     # Initialize output layer
     #
-    self.out = torch.nn.Linear(num_inputs*num_channels, num_outputs) # `LinearWithNorm` combines torch.nn.Linear and torch.nn.BatchNorm1d
+    self.out = torch.nn.Linear(num_inputs*num_channels, num_outputs)
 
   def forward(self, x):
 
@@ -42,25 +42,25 @@ class SelfAttentionModel(torch.nn.Module):
     y = []
     for i in range(batch_size): # Process one sample at a time
 
-      x_i = x[i,:,:] # Shape of [ num_inputs, num_channels ]
+      x_i = x[i,:,:] # x_i has shape of [ num_inputs, num_channels ]
 
-      x_k_i = torch.matmul(self.K, x_i) # Shape of [ num_inputs, num_channels ]
-      x_q_i = torch.matmul(self.Q, x_i) # Shape of [ num_inputs, num_channels ]
-      x_v_i = torch.matmul(self.V, x_i) # Shape of [ num_inputs, num_channels ]
+      x_k_i = torch.matmul(self.K, x_i) # x_k_i has shape of [ num_inputs, num_channels ]
+      x_q_i = torch.matmul(self.Q, x_i) # x_q_i has shape of [ num_inputs, num_channels ]
+      x_v_i = torch.matmul(self.V, x_i) # x_v_i has shape of [ num_inputs, num_channels ]
 
-      w_i = self.softmax(torch.matmul(x_q_i, x_k_i.T)/num_inputs**0.5) # Shape of [ num_inputs, num_inputs ]
-      y_i = torch.matmul(w_i, x_v_i) # Shape of [ num_inputs, num_channels ]
+      w_i = self.softmax(torch.matmul(x_q_i, x_k_i.T)/num_inputs**0.5) # w_i has shape of [ num_inputs, num_inputs ]
+      y_i = torch.matmul(w_i, x_v_i) # y_i has shape of [ num_inputs, num_channels ]
 
       y.append(y_i)
-    y = torch.stack(y, axis=0) # Shape of [ batch_size, num_inputs, num_channels ]
+    y = torch.stack(y, axis=0) # y has shape of [ batch_size, num_inputs, num_channels ]
 
     # Flatten output
     #
-    y_flat = y.reshape([ batch_size, num_inputs*num_channels ]) # Shape of [ batch_size, num_inputs*num_channels ]
+    y_flat = y.reshape([ batch_size, num_inputs*num_channels ]) # y_flat has shape of [ batch_size, num_inputs*num_channels ]
 
     # Run output layer
     #
-    l = self.out(y_flat) # Shape of [ batch_size, num_outputs ]
+    l = self.out(y_flat) # l has shape of [ batch_size, num_outputs ]
 
     return l
 
