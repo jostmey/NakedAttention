@@ -9,7 +9,7 @@
 # Libraries
 ##########################################################################################
 
-import dataplumbing as dp
+import dataplumbing_debug as dp
 import torch
 import torchmetrics
 
@@ -17,72 +17,64 @@ import torchmetrics
 # Model
 ##########################################################################################
 
-class LinearWithNorm(torch.nn.Module):
-  def __init__(self, num_inputs, num_outputs, **kwargs):
-    super().__init__(**kwargs)
-
-    # Initialize linear layer with batch normalization
-    #
-    self.linear = torch.nn.Linear(num_inputs, num_outputs)
-    self.norm = torch.nn.BatchNorm1d(num_outputs)
-
-  def forward(self, x):
-
-    # Run linear layer with batch normalization
-    #
-    l = self.linear(x)
-    n = self.norm(l)
-
-    return n
-
 class SelfAttentionModel(torch.nn.Module):
-  def __init__(self, num_inputs, num_outputs, width=128, **kwargs):
+  def __init__(self, num_inputs, num_channels, num_outputs, **kwargs):
     super().__init__(**kwargs)
 
-    # Initialize transformer module
+    # Initialize components for self-attention
     #
-    self.key = LinearWithNorm(num_inputs, width) # `LinearWithNorm` combines torch.nn.Linear and torch.nn.BatchNorm1d
-    self.query = LinearWithNorm(num_inputs, width)
-    self.value = LinearWithNorm(num_inputs, width)
-    self.softmax = torch.nn.Softmax(dim=2)
+    self.K = torch.nn.Parameter(torch.randn(num_inputs, num_inputs))
+    self.Q = torch.nn.Parameter(torch.randn(num_inputs, num_inputs))
+    self.V = torch.nn.Parameter(torch.randn(num_inputs, num_inputs))
+
+    self.softmax = torch.nn.Softmax(dim=1)
 
     # Initialize output layer
     #
-    self.out = LinearWithNorm(width, num_outputs) # `LinearWithNorm` combines torch.nn.Linear and torch.nn.BatchNorm1d
+    self.out = torch.nn.Linear(num_inputs*num_channels, num_outputs) # `LinearWithNorm` combines torch.nn.Linear and torch.nn.BatchNorm1d
 
   def forward(self, x):
 
-    # Run transformer module
+    batch_size, num_inputs, num_channels = x.shape
+
+    # Run self attention
     #
-    ks = self.key(x) # Shape of [ batch_size, width ]
-    qs = self.query(x) # Shape of [ batch_size, width ]
-    vs = self.value(x) # Shape of [ batch_size, width ]
+    y = []
+    for i in range(batch_size): # Process one sample at a time
 
-    batch_size, width = ks.shape
-    ks_ = ks.reshape([ batch_size, 1, width ]) # Shape of [ batch_size, 1, width ]
-    qs_ = qs.reshape([ batch_size, width, 1 ]) # Shape of [ batch_size, width, 1 ]
-    vs_ = vs.reshape([ batch_size, 1, width ]) # Shape of [ batch_size, 1, width ]
+      x_i = x[i,:,:] # Shape of [ num_inputs, num_channels ]
 
-    ws_ = self.softmax(ks_*qs_/width**0.5) # Shape of [ batch_size, width, width ]. The softmax ensures the sum of values along the last dimension is always 1.
-    ys = torch.sum(ws_*vs_, axis=2) # Shape of [ batch_size, width ]
+      x_k_i = torch.matmul(self.K, x_i) # Shape of [ num_inputs, num_channels ]
+      x_q_i = torch.matmul(self.Q, x_i) # Shape of [ num_inputs, num_channels ]
+      x_v_i = torch.matmul(self.V, x_i) # Shape of [ num_inputs, num_channels ]
+
+      w_i = self.softmax(torch.matmul(x_q_i, x_k_i.T)/num_inputs**0.5) # Shape of [ num_inputs, num_inputs ]
+      y_i = torch.matmul(w_i, x_v_i) # Shape of [ num_inputs, num_channels ]
+
+      y.append(y_i)
+    y = torch.stack(y, axis=0) # Shape of [ batch_size, num_inputs, num_channels ]
+
+    # Flatten output
+    #
+    y_flat = y.reshape([ batch_size, num_inputs*num_channels ]) # Shape of [ batch_size, num_inputs*num_channels ]
 
     # Run output layer
     #
-    ls = self.out(ys) # Shape of [ batch_size, 10 ]
+    l = self.out(y_flat) # Shape of [ batch_size, num_outputs ]
 
-    return ls
+    return l
 
 ##########################################################################################
 # Instantiate model, performance metrics, and optimizer.
 ##########################################################################################
 
-model = SelfAttentionModel(28**2, 10, width=32)
+model = SelfAttentionModel(num_inputs=28**2, num_channels=1, num_outputs=10)
 probability = torch.nn.Softmax(dim=1)
 
 loss = torch.nn.CrossEntropyLoss()
 accuracy = torchmetrics.classification.MulticlassAccuracy(num_classes=10)
 
-optimizer = torch.optim.Adam(model.parameters(), lr=0.1)
+optimizer = torch.optim.Adam(model.parameters(), lr=0.001)
 
 ##########################################################################################
 # Dataset and data sampler
@@ -92,7 +84,7 @@ xs_train, ys_train, xs_val, ys_val, xs_test, ys_test = dp.load_mnist(seed=46525)
 
 dataset_train = torch.utils.data.TensorDataset(xs_train, ys_train)
 sampler_train = torch.utils.data.RandomSampler(dataset_train, replacement=True)
-loader_train = torch.utils.data.DataLoader(dataset=dataset_train, batch_size=1024, sampler=sampler_train, drop_last=True)
+loader_train = torch.utils.data.DataLoader(dataset=dataset_train, batch_size=16, sampler=sampler_train, drop_last=True)
 
 ##########################################################################################
 # Model
