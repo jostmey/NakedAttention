@@ -9,7 +9,7 @@
 # Libraries
 ##########################################################################################
 
-import dataplumbing_debug as dp
+import dataplumbing as dp
 import torch
 import torchmetrics
 
