@@ -74,7 +74,7 @@ probability = torch.nn.Softmax(dim=1)
 loss = torch.nn.CrossEntropyLoss()
 accuracy = torchmetrics.classification.MulticlassAccuracy(num_classes=10)
 
-optimizer = torch.optim.Adam(model.parameters(), lr=0.001)
+optimizer = torch.optim.Adam(model.parameters(), lr=0.01)
 
 ##########################################################################################
 # Dataset and data sampler
