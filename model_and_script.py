@@ -48,9 +48,8 @@ class SelfAttentionModel(torch.nn.Module):
       x_q_i = torch.matmul(x_i, self.Q) # x_q_i has shape of [ num_steps, num_channels ]
       x_v_i = torch.matmul(x_i, self.V) # x_v_i has shape of [ num_steps, num_channels ]
 
-      w_i = self.softmax(torch.matmul(x_q_i.T, x_k_i)/num_channels**0.5) # w_i has shape of [ num_channels, num_channels ]
-
-      y_i = torch.matmul(x_v_i, w_i) # y_i has shape of [ num_steps, num_channels ]
+      w_i = self.softmax(torch.matmul(x_q_i, x_k_i.T)/num_channels**0.5) # w_i has shape of [ num_steps, num_steps ]
+      y_i = torch.matmul(w_i, x_v_i) # y_i has shape of [ num_steps, num_channels ]
 
       y.append(y_i)
     y = torch.stack(y, axis=0) # y has shape of [ batch_size, num_steps, num_channels ]
@@ -69,7 +68,7 @@ class SelfAttentionModel(torch.nn.Module):
 # Instantiate model, performance metrics, and optimizer.
 ##########################################################################################
 
-model = SelfAttentionModel(num_steps=1, num_channels=28**2, num_outputs=10)
+model = SelfAttentionModel(num_steps=28**2, num_channels=1, num_outputs=10)
 probability = torch.nn.Softmax(dim=1)
 
 loss = torch.nn.CrossEntropyLoss()

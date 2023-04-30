@@ -1,6 +1,3 @@
-# NOTICE OF BUG:
-I am receiving excellent feedback and there may be a conceptual error in this repository. The issue is still being addressed.
-
 ##  Revealing example of a self-attention model, the building block of a transformer model
 
 Have you heard of transformer models and attempted to study their code but struggled to locate the essential components that make them tick? Look no further, you've arrived at the right place!
@@ -14,6 +11,14 @@ The model is tested on the widely-recognized MNIST dataset. To maintain simplici
 To run the code, simply execute python3 model_and_script.py, or you can refer to results.txt.
 
 With this foundational understanding of self-attention, you're now equipped with the essential knowledge to comprehend how transformer models function. Your next step is to explore further resources on constructing transformer models based on self-attention mechanisms. Good luck!
+
+## Issues
+
+Please feel free to reach out if you encounter any issues or even have suspicions about potential problems within this repository. Your feedback is greatly appreciated and will help ensure the accuracy and quality of the content presented.
+
+## Acknowledgements
+
+Thanks to [GaggiX](https://news.ycombinator.com/user?id=GaggiX) for helping identify issues with this repository.
 
 ## Requirements
 * [Python3](https://www.python.org/)
