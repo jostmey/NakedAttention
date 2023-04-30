@@ -18,7 +18,8 @@ Please feel free to reach out if you encounter any issues or even have suspicion
 
 ## Acknowledgements
 
-Thanks to [GaggiX](https://news.ycombinator.com/user?id=GaggiX) for helping identify issues with this repository.
+* Thanks to [GaggiX](https://news.ycombinator.com/user?id=GaggiX) for helping identify issues with this repository.
+* Thanks to [James Stevenson](https://github.com/jminuse) for identifying and fixing a memory leak issue.
 
 ## Requirements
 * [Python3](https://www.python.org/)
