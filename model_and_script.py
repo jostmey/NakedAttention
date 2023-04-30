@@ -18,46 +18,46 @@ import torchmetrics
 ##########################################################################################
 
 class SelfAttentionModel(torch.nn.Module):
-  def __init__(self, num_steps, num_inputs, num_outputs, **kwargs):
+  def __init__(self, num_steps, num_channels, num_outputs, **kwargs):
     super().__init__(**kwargs)
 
     # Initialize components for self-attention
     #
-    self.K = torch.nn.Parameter((2.0*torch.rand(num_inputs, num_inputs)-1.0)/num_inputs**0.5) # Randomly intialize each weight uniformly from [ -1/num_inputs**0.5, 1/num_inputs**0.5 ]
-    self.Q = torch.nn.Parameter((2.0*torch.rand(num_inputs, num_inputs)-1.0)/num_inputs**0.5)
-    self.V = torch.nn.Parameter((2.0*torch.rand(num_inputs, num_inputs)-1.0)/num_inputs**0.5)
+    self.K = torch.nn.Parameter((2.0*torch.rand(num_channels, num_channels)-1.0)/num_channels**0.5) # Randomly intialize each weight uniformly from [ -1/num_channels**0.5, 1/num_channels**0.5 ]
+    self.Q = torch.nn.Parameter((2.0*torch.rand(num_channels, num_channels)-1.0)/num_channels**0.5)
+    self.V = torch.nn.Parameter((2.0*torch.rand(num_channels, num_channels)-1.0)/num_channels**0.5)
 
     self.softmax = torch.nn.Softmax(dim=1)
 
     # Initialize output layer
     #
-    self.out = torch.nn.Linear(num_steps*num_inputs, num_outputs)
+    self.out = torch.nn.Linear(num_steps*num_channels, num_outputs)
 
   def forward(self, x):
 
-    batch_size, num_steps, num_inputs = x.shape
+    batch_size, num_steps, num_channels = x.shape
 
     # Run self attention
     #
     y = []
     for i in range(batch_size): # Process one sample at a time
 
-      x_i = x[i,:,:] # x_i has shape of [ num_steps, num_inputs ]
+      x_i = x[i,:,:] # x_i has shape of [ num_steps, num_channels ]
 
-      x_k_i = torch.matmul(x_i, self.K) # x_k_i has shape of [ num_steps, num_inputs ]
-      x_q_i = torch.matmul(x_i, self.Q) # x_q_i has shape of [ num_steps, num_inputs ]
-      x_v_i = torch.matmul(x_i, self.V) # x_v_i has shape of [ num_steps, num_inputs ]
+      x_k_i = torch.matmul(x_i, self.K) # x_k_i has shape of [ num_steps, num_channels ]
+      x_q_i = torch.matmul(x_i, self.Q) # x_q_i has shape of [ num_steps, num_channels ]
+      x_v_i = torch.matmul(x_i, self.V) # x_v_i has shape of [ num_steps, num_channels ]
 
-      w_i = self.softmax(torch.matmul(x_q_i.T, x_k_i)/num_inputs**0.5) # w_i has shape of [ num_inputs, num_inputs ]
+      w_i = self.softmax(torch.matmul(x_q_i.T, x_k_i)/num_channels**0.5) # w_i has shape of [ num_channels, num_channels ]
 
-      y_i = torch.matmul(x_v_i, w_i) # y_i has shape of [ num_steps, num_inputs ]
+      y_i = torch.matmul(x_v_i, w_i) # y_i has shape of [ num_steps, num_channels ]
 
       y.append(y_i)
-    y = torch.stack(y, axis=0) # y has shape of [ batch_size, num_steps, num_inputs ]
+    y = torch.stack(y, axis=0) # y has shape of [ batch_size, num_steps, num_channels ]
 
     # Flatten output
     #
-    y_flat = y.reshape([ batch_size, num_steps*num_inputs ]) # y_flat has shape of [ batch_size, num_steps*num_inputs ]
+    y_flat = y.reshape([ batch_size, num_steps*num_channels ]) # y_flat has shape of [ batch_size, num_steps*num_channels ]
 
     # Run output layer
     #
@@ -69,7 +69,7 @@ class SelfAttentionModel(torch.nn.Module):
 # Instantiate model, performance metrics, and optimizer.
 ##########################################################################################
 
-model = SelfAttentionModel(num_steps=1, num_inputs=28**2, num_outputs=10)
+model = SelfAttentionModel(num_steps=1, num_channels=28**2, num_outputs=10)
 probability = torch.nn.Softmax(dim=1)
 
 loss = torch.nn.CrossEntropyLoss()
