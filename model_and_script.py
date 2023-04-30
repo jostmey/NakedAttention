@@ -112,8 +112,8 @@ for i in range(128):
     optimizer.zero_grad()
     e_batch.backward()
     optimizer.step()
-    e_train += e_batch/len(loader_train) # Accumulate average loss for this epoch
-    a_train += a_batch/len(loader_train) # Accumulate average accuracy for this epoch
+    e_train += e_batch.detach()/len(loader_train) # Accumulate average loss for this epoch
+    a_train += a_batch.detach()/len(loader_train) # Accumulate average accuracy for this epoch
 
   # Assess performance on validation data
   #
