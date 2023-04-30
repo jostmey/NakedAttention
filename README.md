@@ -1,3 +1,6 @@
+# NOTICE OF BUG:
+I am receiving excellent feedback and there may be a conceptual error in this repository. It's possible that the dimensions associated with input and channels might be inverted. I will thoroughly investigate this issue and make any necessary revisions to ensure accuracy and clarity in the implementation.
+
 ##  Revealing example of a self-attention model, the building block of a transformer model
 
 Have you heard of transformer models and attempted to study their code but struggled to locate the essential components that make them tick? Look no further, you've arrived at the right place!
