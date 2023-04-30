@@ -1,5 +1,5 @@
 # NOTICE OF BUG:
-I am receiving excellent feedback and there may be a conceptual error in this repository. It's possible that the dimensions associated with input and channels might be inverted. I will thoroughly investigate this issue and make any necessary revisions to ensure accuracy and clarity in the implementation.
+I am receiving excellent feedback and there may be a conceptual error in this repository. I believe the issue has been addressed, but I will need review the repository later to ensure accuracy and clarity in the implementation.
 
 ##  Revealing example of a self-attention model, the building block of a transformer model
 

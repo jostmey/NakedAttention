@@ -34,13 +34,13 @@ def load_mnist(seed=None, device=torch.device('cpu')):
   #
   xs = samples_train.data.to(device)
   num = xs.shape[0]
-  xs = xs.reshape([ num, 28**2, 1 ])
+  xs = xs.reshape([ num, 1, 28**2 ])
   xs = xs.type(torch.float32)
   ys = samples_train.train_labels.to(device)
 
   xs_test = samples_test.data.to(device)
   num_test = xs_test.shape[0]
-  xs_test = xs_test.reshape([ num_test, 28**2, 1 ])
+  xs_test = xs_test.reshape([ num_test, 1, 28**2 ])
   xs_test = xs_test.type(torch.float32)
   ys_test = samples_test.test_labels.to(device)
 
